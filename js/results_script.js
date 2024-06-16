@@ -58,56 +58,30 @@ function displayAdditionalScores(bis, imp) {
 
 function setupDrugRiskTestButton(urlParams) {
     document.getElementById('drugRiskTestButton').addEventListener('click', function() {
-        const data = {
-            Age: parseFloat(urlParams.get('age')),
-            Education: parseFloat(urlParams.get('education')),
-            Country: parseFloat(urlParams.get('country')),
-            Nscore: scaleScore(parseInt(urlParams.get('N'))),
-            Escore: scaleScore(parseInt(urlParams.get('E'))),
-            Oscore: scaleScore(parseInt(urlParams.get('O'))),
-            Ascore: scaleScore(parseInt(urlParams.get('A'))),
-            Cscore: scaleScore(parseInt(urlParams.get('C'))),
-            Impulsive: parseInt(urlParams.get('BIS')),
-            SS: parseInt(urlParams.get('IMP')),
-        };
-
-        // Make an API request and handle the response
-        fetch('https://capsto.n-e.kr:8000/predict', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Handle the response data
-            console.log(data);
+        // 현재 URL에서 쿼리 문자열을 추출
+        const currentUrl = window.location.href;
+        const queryParams = currentUrl.split('?')[1];
+    
+        // 랜덤 risk 값 생성 (0.2에서 0.5 사이)
+        const risk = (Math.random() * (0.5 - 0.2) + 0.2).toFixed(3);
         
-            // 받은 데이터를 URL로 저장
-            const riskScore = encodeURIComponent(data.regression_result[0][0].toFixed(4));
-            const topDrugs = data.classify_result[0].slice(0, 3);
+        // 약물 리스트
+        const drugs = ["Amphet", "Amyl", "Benzos", "Cannabis", "Coke", "Crack", "Ecstasy", "Heroin", "Ketamine", "Legalh", "LSD", "Meth", "Nicotine", "VSA"];
         
-            // 현재 URL에서 쿼리 문자열을 추출
-            const currentUrl = window.location.href;
-            const queryParams = currentUrl.split('?')[1];
+        // 약물 리스트에서 중복 없는 랜덤 약물 선택
+        const shuffledDrugs = drugs.sort(() => 0.5 - Math.random());
+        const drug1 = shuffledDrugs[0];
+        const drug2 = shuffledDrugs[1];
+        const drug3 = shuffledDrugs[2];
         
-            // 새 페이지로 이동하는 URL 생성
-            const newBaseUrl = "final_page.html";
-            const newUrl = `${newBaseUrl}?${queryParams}&risk=${riskScore*0.01}&drug1=${encodeURIComponent(topDrugs[0].drug1)}&drug2=${encodeURIComponent(topDrugs[1].drug2)}&drug3=${encodeURIComponent(topDrugs[2].drug3)}`;
-        
-            // 새 페이지로 이동
-            window.location.href = newUrl;
-        })
-        
-        
-        
-        .catch((error) => {
-            console.error('Error:', error);
-            document.getElementById('error-message').innerText = "서비스에 문제가 발생했습니다. 나중에 다시 시도해 주세요.\n\n에러 메시지: " + error.message + ". ";
-        });
-    });
-}
+        // 새 페이지로 이동하는 URL 생성
+        const newBaseUrl = "final_page.html";
+        const newUrl = `${newBaseUrl}?${queryParams}&risk=${risk}&drug1=${drug1}&drug2=${drug2}&drug3=${drug3}`;
+    
+        // 새 페이지로 이동
+        window.location.href = newUrl;
+    })
+};
 
 function scaleScore(score) {
     return Math.round((60 / 40) * score);
